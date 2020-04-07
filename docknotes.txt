@@ -1,0 +1,23 @@
+.desktop files contain startupwmclass and id
+startupwmclass matching means same app
+
+GDesktopAppInfo *
+shell_app_cache_get_info (ShellAppCache *cache,
+                          const char    *id)
+{
+  const GList *iter;
+
+  g_return_val_if_fail (SHELL_IS_APP_CACHE (cache), NULL);
+
+  for (iter = cache->app_infos; iter != NULL; iter = iter->next)
+    {
+      GAppInfo *info = iter->data;
+
+      if (g_strcmp0 (id, g_app_info_get_id (info)) == 0)
+        return G_DESKTOP_APP_INFO (info);
+    }
+
+  return NULL;
+}
+
+windows tracked in https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/master/src/shell-window-tracker.c

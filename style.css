@@ -1,0 +1,9 @@
+.dock {
+    background-color: #383838;
+    border-radius: 30px;
+    padding: 10px;
+}
+
+GtkImage {
+    background: none;
+}
