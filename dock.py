@@ -102,23 +102,33 @@ def create_icon(click_event, *, icon_image, name="Application"):
     return (box, update_dots)
 
 
-class Dock(Gtk.Box):
+class Dock(Gtk.Bin):
     def __init__(self, screen=default_screen, app_cache=None, window_tracker=None):
-        super().__init__(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        super().__init__()
 
-        self.get_style_context().add_class("dock")
+        self._box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        self._box.get_style_context().add_class("dock")
+        # self._box = Gtk.Label.new("hhhh")
+
         self.app_cache = app_cache or AppCache(load_applications=True)
         self.window_tracker = window_tracker or WindowTracker(
             app_cache=self.app_cache, screen=screen, flter=self.window_filter)
 
         self.window_tracker.connect("update", self.rerender)
 
+        self.add(self._box)
+
+        self.ic = None
+        # self.show_all()
+        self.count = 0
+        # Gtk.main()
+
     def rerender(self, _):
         groups = self.window_tracker.get_groups(
             groupby=groupings.by_wmclass_group)
 
-        for child in self.get_children():
-            Gtk.Widget.destroy(child)
+        # for child in self._box.get_children():
+            # self._box.remove(child)
 
         for group in groups:
             app_info = self.app_cache.get_appinfo_for_wmclass(
@@ -126,13 +136,20 @@ class Dock(Gtk.Box):
 
             icon, update_icon = create_icon(lambda: None, icon_image=pixbuf2image(get_icon_pixbuf_for_appinfo(
                 app_info) if app_info else get_gicon_pixbuf(Gio.ThemedIcon.new_from_names(["dialog-error-symbolic"]))), name=app_info.get_name() if app_info else group[0].get_name())
+            self.ic = icon
 
-            self.add(icon)
+            # self._box.add(icon)
+            self._box.add(Gtk.Button.new_with_label("hi"))
+            # self.count = self.count + 1
+            # self._box.set_text(str(self.count))
+
             update_icon(len(group))
             print("group added:", app_info.get_name() if app_info else group[0].get_name())
-            print(icon.get_size_request())
-
+            # print(icon.get_size_request())
+        self._box.queue_draw()
         self.queue_draw()
+
+        # GLib.timeout_add(10000, lambda: self.rerender(1) and False)
 
     def window_filter(self, window):
         return window.get_window_type() == Wnck.WindowType.NORMAL
