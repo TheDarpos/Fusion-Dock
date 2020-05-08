@@ -51,7 +51,7 @@ class WindowTracker(GObject.Object):
 
         return groups
 
-    def track_by(self, flter=lambda: True):
+    def track_by(self, flter=lambda _: True):
         for window in self.screen.get_windows():
             if flter(window):
                 self.track(window)

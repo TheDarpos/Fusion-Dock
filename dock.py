@@ -1,7 +1,9 @@
 import gi
+import time
 import math
 import cairo
 import numpy
+
 
 gi.require_version('Gtk', '3.0')  # noqa
 gi.require_version('Gio', '2.0')  # noqa
@@ -10,11 +12,16 @@ gi.require_version('Wnck', '3.0')  # noqa
 gi.require_version('GdkPixbuf', '2.0')  # noqa
 
 from PIL import Image
+from threading import Thread
+from applications import AppCache, WindowTracker, groupings, get_icon_pixbuf_for_appinfo, get_gicon_pixbuf
 from gi.repository import Gtk, Gio, GdkPixbuf, GLib, Wnck
 from dominantcolors import rgba2rgb, find_dominant_colors
-from applications import AppCache, WindowTracker, groupings, get_icon_pixbuf_for_appinfo, get_gicon_pixbuf
 
 default_screen = Wnck.Screen.get_default()
+
+
+def lerp(start, end, amt):
+    return (1-amt)*start+amt*end
 
 
 def pixbuf2image(pix):
@@ -32,12 +39,14 @@ def pixbuf2image(pix):
 
 
 def image2pixbuf(im):
-    arr = numpy.array(im)
-    w, h = im.size
     width, height = im.size
 
     return GdkPixbuf.Pixbuf.new_from_bytes(GLib.Bytes.new(im.tobytes("raw", "RGBA")), GdkPixbuf.Colorspace.RGB,
                                            True, 8, width, height, width * 4)
+
+
+def should_show_window(window):
+    return window.get_window_type() == Wnck.WindowType.NORMAL or window.get_window_type() == Wnck.WindowType.SPLASHSCREEN
 
 
 def create_icon(click_event, *, icon_image, name="Application"):
@@ -98,37 +107,48 @@ def create_icon(click_event, *, icon_image, name="Application"):
 
     box.add(image)
     box.add(dots)
+    box.show_all()
 
     return (box, update_dots)
+
+
+ANIMATE_DURATION = 2010
 
 
 class Dock(Gtk.Bin):
     def __init__(self, screen=default_screen, app_cache=None, window_tracker=None):
         super().__init__()
 
+        self.current_width = 0
+        self.old_width = 0
+        self.animation_progress = 1
+        self.animation_start = 0
+
         self._box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self._box.get_style_context().add_class("dock")
-        # self._box = Gtk.Label.new("hhhh")
 
         self.app_cache = app_cache or AppCache(load_applications=True)
         self.window_tracker = window_tracker or WindowTracker(
             app_cache=self.app_cache, screen=screen, flter=self.window_filter)
 
+        self.window_tracker.track_by(should_show_window)
+
         self.window_tracker.connect("update", self.rerender)
 
         self.add(self._box)
+        self.show_all()
 
-        self.ic = None
-        # self.show_all()
-        self.count = 0
-        # Gtk.main()
+    def calc_width(self):
+        return len(self._box.get_children()) * 110 + 10
 
     def rerender(self, _):
+        self.set_size_request(self.calc_width(), -1)
+
         groups = self.window_tracker.get_groups(
             groupby=groupings.by_wmclass_group)
 
-        # for child in self._box.get_children():
-            # self._box.remove(child)
+        for child in self._box.get_children():
+            self._box.remove(child)
 
         for group in groups:
             app_info = self.app_cache.get_appinfo_for_wmclass(
@@ -136,20 +156,39 @@ class Dock(Gtk.Bin):
 
             icon, update_icon = create_icon(lambda: None, icon_image=pixbuf2image(get_icon_pixbuf_for_appinfo(
                 app_info) if app_info else get_gicon_pixbuf(Gio.ThemedIcon.new_from_names(["dialog-error-symbolic"]))), name=app_info.get_name() if app_info else group[0].get_name())
-            self.ic = icon
 
-            # self._box.add(icon)
-            self._box.add(Gtk.Button.new_with_label("hi"))
-            # self.count = self.count + 1
-            # self._box.set_text(str(self.count))
+            self._box.add(icon)
+            icon.show()
+            update_icon(2)
 
-            update_icon(len(group))
-            print("group added:", app_info.get_name() if app_info else group[0].get_name())
-            # print(icon.get_size_request())
-        self._box.queue_draw()
+            print("group added:", app_info.get_name()
+                  if app_info else group[0].get_name())
+
+        # self.animate_width(self.calc_width())
+        # anim_thread = Thread(target=lambda: self.animate_width(self.calc_width()))
+        # anim_thread.start()
+
+    def animation_step(self, *_):
+        current_time = time.time()
+
+        animation_progress = min(
+            (current_time - self.animation_start) * 1000 / ANIMATE_DURATION, 1)
+
+        self.set_size_request(
+            lerp(self.old_width, self.current_width, animation_progress), -1)
+        print(self.get_size_request().width)
+
         self.queue_draw()
 
-        # GLib.timeout_add(10000, lambda: self.rerender(1) and False)
+        return animation_progress < 1
+
+    def animate_width(self, target):
+        if self.current_width != target:
+            self.old_width = self.current_width
+            self.current_width = target
+            self.animation_start = time.time()
+
+            GLib.timeout_add(100, self.animation_step)
 
     def window_filter(self, window):
         return window.get_window_type() == Wnck.WindowType.NORMAL

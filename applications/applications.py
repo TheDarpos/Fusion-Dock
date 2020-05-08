@@ -17,7 +17,7 @@ def get_icon_pixbuf_for_appinfo(appinfo):
 
 def get_gicon_pixbuf(icon):
     if icon:
-        icon_info = Gtk.IconTheme.get_default().lookup_by_gicon_for_scale(icon, 48, 1, Gtk.IconLookupFlags.USE_BUILTIN)
+        icon_info = Gtk.IconTheme.get_default().lookup_by_gicon_for_scale(icon, 512, 1, Gtk.IconLookupFlags.USE_BUILTIN)
 
         if icon_info:
             return icon_info.load_icon()

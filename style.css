@@ -1,7 +1,7 @@
 .dock {
     background-color: #383838;
-    border-radius: 30px;
-    padding: 10px;
+    border-radius: 1000rem;
+    padding: 20px;
 }
 
 GtkImage {
