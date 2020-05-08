@@ -159,12 +159,12 @@ class Dock(Gtk.Bin):
 
             self._box.add(icon)
             icon.show()
-            update_icon(2)
+            update_icon(len(group))
 
             print("group added:", app_info.get_name()
                   if app_info else group[0].get_name())
 
-        # self.animate_width(self.calc_width())
+        # self.animate_width(self.calc_width())w
         # anim_thread = Thread(target=lambda: self.animate_width(self.calc_width()))
         # anim_thread.start()
 
