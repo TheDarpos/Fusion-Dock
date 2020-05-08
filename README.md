@@ -25,4 +25,4 @@ Diffusion dock is the dock for the Linux distrobution, Diffusion linux.
    
    **Please do note this dock is very alpha and is being worked on**
      
-   # DISCLAIMER: only works with X11, not way
+   # DISCLAIMER: only works with X11, not wayland
