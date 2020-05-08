@@ -1,4 +1,4 @@
-# Diffusion-dock
+# Diffusion-Dock
 a fork of [Team-Diffusion's diffusion dock](https://github.com/Team-Diffusion/Diffusion-Dock)
 this fork is made for me to work on it without disrupting the main project
 # What is diffusion dock?
@@ -13,7 +13,9 @@ Diffusion dock is the dock for the Linux distrobution, Diffusion linux.
 # Installation
  
  ## Ubuntu and Ubuntu based distros
- First of all we will need to clone the repository, run `git clone https://github.com/MrPotatoBobx/Diffusion-Dock`
+   Make sure you have pip3 installed, if not install it by running `sudo apt install python3-pip`
+   
+   First of all we will need to clone the repository, run `git clone https://github.com/MrPotatoBobx/Diffusion-Dock`
    
    After we have cloned the dock we will change our directory in to it via `cd Diffusion-Dock`
    
@@ -22,3 +24,5 @@ Diffusion dock is the dock for the Linux distrobution, Diffusion linux.
    Then you can run the dock by running `python3 app.py`
    
    **Please do note this dock is very alpha and is being worked on**
+     
+   # DISCLAIMER: only works with X11, not way
