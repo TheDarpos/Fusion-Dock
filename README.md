@@ -2,7 +2,7 @@
 a fork of [Team-Diffusion's diffusion dock](https://github.com/Team-Diffusion/Diffusion-Dock)
 this fork is made for me to work on it without disrupting the main project
 # What is diffusion dock?
-Diffusion dock is the dock for the Linux distrobution, Diffusion linux.
+Diffusion dock is the dock for the Linux distro, Diffusion Linux.
 # Preview 
 ![](readme_images/example.png)
 # Features
